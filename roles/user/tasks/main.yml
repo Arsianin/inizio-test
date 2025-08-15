@@ -1,0 +1,13 @@
+- name: Create wwwebapp user
+  user:
+    name: wwwebapp
+    shell: /bin/bash
+    create_home: yes
+    state: present
+
+- name: Add authorized key for wwwebapp
+  authorized_key:
+    user: wwwebapp
+    state: present
+    key: "{{ lookup('file', '~/.ssh/id_rsa_ansible.pub') }}"
+

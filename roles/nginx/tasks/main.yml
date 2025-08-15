@@ -1,0 +1,49 @@
+- name: Install NGINX
+  apt:
+    name: nginx
+    state: present
+    update_cache: yes
+
+- name: Create directory for static site
+  file:
+    path: /opt/static-sites
+    state: directory
+    owner: wwwebapp
+    group: wwwebapp
+    mode: '0755'
+
+- name: Deploy index.html
+  template:
+    src: index.html.j2
+    dest: /opt/static-sites/index.html
+    owner: wwwebapp
+    group: wwwebapp
+    mode: '0644'
+
+- name: Replace default nginx config
+  copy:
+    dest: /etc/nginx/sites-available/default
+    content: |
+      server {
+          listen 80 default_server;
+          listen [::]:80 default_server;
+
+          root /opt/static-sites;
+          index index.html;
+
+          server_name _;
+
+          location / {
+              try_files $uri $uri/ =404;
+          }
+      }
+  notify:
+    - Restart NGINX
+
+
+- name: Start NGINX using service module (WSL compatible)
+  service:
+    name: nginx
+    state: started
+    enabled: yes
+

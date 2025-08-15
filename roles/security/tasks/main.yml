@@ -1,0 +1,31 @@
+- name: Install unattended-upgrades
+  apt:
+    name: unattended-upgrades
+    state: present
+    update_cache: yes
+
+- name: Enable unattended-upgrades
+  copy:
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+
+- name: Install fail2ban
+  apt:
+    name: fail2ban
+    state: present
+    update_cache: yes
+
+- name: Deploy jail.local template (WSL compatible)
+  template:
+    src: jail.local.j2
+    dest: /etc/fail2ban/jail.local
+  notify: Restart fail2ban
+
+- name: Ensure fail2ban is running
+  service:
+    name: fail2ban
+    state: started
+    enabled: true
+
